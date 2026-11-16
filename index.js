@@ -24,21 +24,21 @@ const client = new Client({
 });
 
 const isStaff = (member) => {
+  if (!member) return false;
+
+  const ownerIds = (process.env.OWNER_ID || '')
+    .split(',')
+    .map(id => id.trim())
+    .filter(Boolean);
+
+  if (ownerIds.includes(member.id || member.user?.id)) {
+    return true;
+  }
+
   const staffIds = process.env.IDS_CARGO_STAFF?.split(',') || [];
-  return staffIds.some(id => member.roles.cache.has(id.trim()));
+  return staffIds.some(id => member.roles?.cache?.has(id.trim()));
 };
 
-
-const formatarHoras = (horas) => {
-  const totalSegundos = Math.floor(horas * 3600);
-  const h   = Math.floor(totalSegundos / 3600);
-  const min = Math.floor((totalSegundos % 3600) / 60);
-  const seg = totalSegundos % 60;
-  return `${h}h ${min}min ${seg}s`;
-};
-
-// Fecha todos os pontos ativos de uma vez (não está atrelada a nenhum comando ainda)
-// Uso futuro: await fecharTodosPontos(message.guild, message.author.id)
 const fecharTodosPontos = async (guild = null, executorId = null) => {
   const membros = await db.getPontosAbertos();
 
@@ -308,8 +308,7 @@ client.on('messageCreate', async (message) => {
       return message.reply('❌ Uso correto: `!fecharP @usuario` ou `!fecharP <ID do Discord>`');
     }
 
-    // Tenta pelo mention primeiro, depois pelo ID do Discord (apenas dígitos)
-    let alvoMembro = message.mentions.members.first();
+    // Tenta pelo mention primeiro, depois pelo ID do Discord (apenas dígitos)   let alvoMembro = message.mentions.members.first();
     if (!alvoMembro) {
       const idArg = args[0].replace(/\D/g, ''); // remove qualquer caractere não numérico
       if (!idArg) {
@@ -362,6 +361,32 @@ client.on('messageCreate', async (message) => {
         ],
       });
 
+      const OWNER_IDS = (process.env.OWNER_IDS || process.env.OWNER_ID || '')
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean);
+
+        function isOwner(userId) {
+          return OWNER_IDS.includes(String(userId));
+        }
+
+        function temPermissao(interaction, cargosPermitidos = []) {
+          // 1. Bypass imediato pelo seu ID do Discord (independe de cargo ou servidor)
+          if (isOwner(interaction.user.id)) {
+            return true;
+          }
+
+          // 2. Se não for você e não houver lista de cargos exigida, bloqueia por padrão
+          if (!cargosPermitidos.length || !interaction.member) {
+            return false;
+          }
+
+          // 3. Verifica se o membro possui algum dos cargos autorizados (por ID ou nome)
+          return interaction.member.roles.cache.some(
+            (role) => cargosPermitidos.includes(role.id) || cargosPermitidos.includes(role.name)
+          );
+        }
+      
       const canalLogs = message.guild.channels.cache.get(process.env.ID_CANAL_LOGS);
       if (canalLogs) {
         await canalLogs.send({
