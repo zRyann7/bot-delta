@@ -1,0 +1,7 @@
+DISPLAY_NAME=Bot Delta
+MAIN=index.js
+MEMORY=312
+VERSION=26.12.1
+LANGUAGE=node
+CUSTOM_COMMAND=npx prisma generate && node index.js
+APPID=61743bf8-f8d4-4bed-bb55-cb9385b564c4

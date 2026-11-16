@@ -1,0 +1,43 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Membro {
+  id             String  @id
+  username       String
+  horas          Float   @default(0)
+  acoes          Int     @default(0)
+  inicio_plantao String?
+
+  @@map("membros")
+}
+
+model HistoricoPlantao {
+  id            Int    @id @default(autoincrement())
+  user_id       String
+  username      String
+  inicio        String
+  fim           String
+  duracao_horas Float
+
+  @@map("historico_plantoes")
+}
+
+model HistoricoAcao {
+  id             Int    @id @default(autoincrement())
+  user_id        String
+  username       String
+  registrado_por String
+  data_registro  String
+
+  @@map("historico_acoes")
+}
