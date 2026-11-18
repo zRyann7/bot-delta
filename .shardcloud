@@ -1,5 +1,5 @@
 DISPLAY_NAME=Bot Delta
-MAIN=index.js
+MAIN=src/index.js
 MEMORY=312
 VERSION=26.12.1
 LANGUAGE=node

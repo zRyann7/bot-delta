@@ -1,10 +1,10 @@
 {
   "name": "bot_delta_v2",
-  "version": "1.0.0",
-  "description": "Meu Bot",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "Sistema de Ponto - Unidade Delta",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node src/index.js",
     "build": "prisma generate",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
@@ -16,16 +16,9 @@
   "dependencies": {
     "@prisma/client": "^5.14.0",
     "discord.js": "^14.26.4",
-    "dotenv": "^17.4.2",
-    "exceljs": "^4.4.0",
-    "googleapis": "^171.4.0"
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "prisma": "^5.14.0"
-  },
-  "allowScripts": {
-    "prisma@5.22.0": true,
-    "@prisma/client@5.22.0": true,
-    "@prisma/engines@5.22.0": true
   }
 }
