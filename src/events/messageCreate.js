@@ -8,57 +8,74 @@ module.exports = {
   async execute(message, client) {
     if (message.author.bot || !message.guild) return;
 
-    // Resposta quando o bot é mencionado
-    if (message.mentions.has(client.user) && !message.mentions.everyone) {
+    // Dispara apenas quando o bot é mencionado diretamente (sem outros textos)
+    const mentionRegex = new RegExp(`^<@!?${client.user.id}>$`);
+    if (mentionRegex.test(message.content.trim())) {
+      const member =
+        message.member ||
+        (await message.guild.members.fetch(message.author.id).catch(() => null));
+      const userIsStaff = member ? isStaff(member) : false;
+
+      const fields = [
+        {
+          name: 'Operação & Consulta',
+          value: [
+            '`!painel` • Abre o terminal interativo de ponto',
+            '`!pontosRegistrados` • Exibe o total de horas da unidade',
+          ].join('\n'),
+          inline: false,
+        },
+        {
+          name: 'Controles do Painel',
+          value: [
+            '**Iniciar Ponto** • Registra entrada no expediente',
+            '**Finalizar Ponto** • Encerra o turno e salva as horas',
+            '**Meu Perfil** • Consulta horas, apreensões e status',
+          ].join('\n'),
+          inline: false,
+        },
+      ];
+
+      if (userIsStaff) {
+        fields.push({
+          name: 'Comandos da Liderança',
+          value: [
+            '`!pontos` • Lista pilotos com ponto ativo',
+            '`!ultimosP @piloto` • Últimos 5 plantões do piloto',
+            '`!ajustarHoras @piloto <valor>` • Adiciona ou remove horas',
+            '`!fecharP @piloto | <ID>` • Encerra o ponto aberto de um piloto',
+            '`!fecharTodosPontos` • Encerra todos os pontos ativos',
+            '`!zerarDados @piloto | <ID>` • Zera horas e apreensões do membro',
+            '`!zerarDados CONFIRMAR` • Zera dados de todos os membros',
+            '`!removerMembro @piloto | <ID>` • Apaga o registro definitivamente',
+            '`!excluirM <1-100>` • Apaga as últimas mensagens do canal',
+          ].join('\n'),
+          inline: false,
+        });
+      }
+
       const embed = new EmbedBuilder()
-        .setTitle('🚔  Unidade Delta — Central de Comandos')
-        .setColor('#5865F2')
+        .setColor('#1E293B')
+        .setAuthor({
+          name: 'UNIDADE DELTA • CENTRAL DE COMANDOS',
+          iconURL: client.user.displayAvatarURL(),
+        })
+        .setThumbnail(client.user.displayAvatarURL())
         .setDescription(
-          '> Bem-vindo ao sistema de ponto da **Unidade Delta**.\n' +
-          '> Abaixo estao todos os comandos e funcionalidades disponiveis.'
+          'Sistema de controle de ponto e registro operacional.\n' +
+            'Utilize os botões do painel ou os comandos abaixo via chat.'
         )
-        .addFields(
-          { name: '━━━━━━━━━━━━━━━━━━━━━━━━', value: '** **' },
-          {
-            name: '🟦  Painel Principal',
-            value: '`!painel` — Abre o painel interativo com botoes de operacao',
-            inline: false,
-          },
-          {
-            name: '📋  Pontos Registrados',
-            value: '`!pontosRegistrados` — Exibe o total de horas de todos os membros registrados',
-            inline: false,
-          },
-          { name: '━━━━━━━━━━━━━━━━━━━━━━━━', value: '** **' },
-          {
-            name: '🎮  Botoes do Painel',
-            value:
-              '🟢 **Iniciar Ponto** — Registra sua entrada no expediente\n' +
-              '🔴 **Finalizar Ponto** — Encerra o expediente e salva as horas\n' +
-              '📊 **Meu Perfil** — Exibe suas horas, apreensoes e status',
-            inline: false,
-          },
-          { name: '━━━━━━━━━━━━━━━━━━━━━━━━', value: '** **' },
-          {
-            name: '🔒  Comandos da Liderança',
-            value:
-              '`!ajustarHoras @usuario <valor>` — Adiciona ou remove horas de um piloto\n' +
-              '`!fecharP @usuario` ou `!fecharP <ID do Discord>` — Encerra o ponto aberto de um piloto\n' +
-              '`!fecharTodosPontos` — Encerra todos os pontos ativos de uma vez\n' +
-              '`!pontos` — Lista todos os pilotos com ponto ativo\n' +
-              '`!ultimosP @usuario` — Exibe os ultimos 5 plantoes do piloto\n' +
-              '`!zerarDados @usuario` ou `!zerarDados <ID>` — Zera horas e apreensões de um membro (mantém o registro)\n' +
-              '`!zerarDados CONFIRMAR` — Zera horas e apreensões de **todos** os membros\n' +
-              '`!removerMembro @usuario` ou `!removerMembro <ID>` — Apaga definitivamente o registro de um membro\n' +
-              '`!excluirM 1-100` — Apaga as ultimas N mensagens do canal (max. 100)',
-            inline: false,
-          },
-          { name: '━━━━━━━━━━━━━━━━━━━━━━━━', value: '** **' }
-        )
-        .setFooter({ text: 'Unidade Delta · Sistema de Ponto  |  Mencione o bot para ver esta mensagem' })
+        .addFields(fields)
+        .setFooter({
+          text: userIsStaff
+            ? 'Unidade Delta • Modo Liderança'
+            : 'Unidade Delta • Sistema de Ponto',
+        })
         .setTimestamp();
 
-      return message.reply({ embeds: [embed] });
+      return message
+        .reply({ embeds: [embed], allowedMentions: { repliedUser: false } })
+        .catch(() => message.channel.send({ embeds: [embed] }).catch(() => {}));
     }
 
     if (!message.content.startsWith(PREFIX)) return;
@@ -67,13 +84,34 @@ module.exports = {
     const commandName = args.shift();
     if (!commandName) return;
 
-    const command = client.commands.get(commandName.toLowerCase());
+    const command = client.commands?.get(commandName.toLowerCase());
     if (!command) return;
 
-    if (command.staffOnly && !isStaff(message.member)) {
-      return message.reply('❌ Apenas a liderança Delta pode usar este comando.');
+    if (command.staffOnly) {
+      const member =
+        message.member ||
+        (await message.guild.members.fetch(message.author.id).catch(() => null));
+
+      if (!member || !isStaff(member)) {
+        return message
+          .reply({
+            content: 'Acesso negado. Apenas a liderança Delta pode executar este comando.',
+            allowedMentions: { repliedUser: false },
+          })
+          .catch(() => {});
+      }
     }
 
-    await command.execute(message, args, client);
+    try {
+      await command.execute(message, args, client);
+    } catch (error) {
+      console.error(`[Erro no comando !${commandName}]:`, error);
+      await message
+        .reply({
+          content: 'Ocorreu um erro interno ao executar este comando.',
+          allowedMentions: { repliedUser: false },
+        })
+        .catch(() => {});
+    }
   },
 };
