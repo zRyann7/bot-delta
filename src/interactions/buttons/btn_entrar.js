@@ -53,7 +53,7 @@ module.exports = {
           iconURL: interaction.client.user.displayAvatarURL(),
         })
         .setThumbnail(interaction.user.displayAvatarURL())
-        .setDescription(`Piloto <@${userId}> entrou em QAP.`)
+        .setDescription(`Piloto <@${userId}> entrou em QRV.`)
         .addFields(
           {
             name: 'Início do Turno',
