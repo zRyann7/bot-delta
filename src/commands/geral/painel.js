@@ -2,19 +2,24 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('
 
 module.exports = {
   name: 'painel',
-  staffOnly: false,
+  staffOnly: true,
   async execute(message) {
     const embed = new EmbedBuilder()
-      .setTitle('🚔 Unidade Delta - Central de Operações 🚔')
-      .setDescription('Selecione uma das opcoes abaixo para gerenciar seu expediente .')
+      .setTitle('Painel de Ponto - Unidade Delta')
+      .setDescription(
+        'Registre seu expediente pelos botões abaixo.\n\n' +
+        '**Iniciar Ponto** abre o seu plantão.\n' +
+        '**Finalizar Ponto** fecha o plantão e soma as horas.\n' +
+        '**Meu Perfil** mostra suas horas e apreensões.\n\n' +
+        'Finalize o ponto ao sair. Se esquecer, a liderança precisa fechar por você.'
+      )
       .setColor('#5865F2')
-      .setFooter({ text: 'Unidade Delta - Sistema de Ponto' })
-      .setTimestamp();
+      .setFooter({ text: 'Unidade Delta' });
 
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId('btn_entrar').setLabel('Iniciar Ponto').setEmoji('🟢').setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId('btn_sair').setLabel('Finalizar Ponto').setEmoji('🔴').setStyle(ButtonStyle.Danger),
-      new ButtonBuilder().setCustomId('btn_perfil').setLabel('Meu Perfil').setEmoji('📊').setStyle(ButtonStyle.Primary)
+      new ButtonBuilder().setCustomId('btn_entrar').setLabel('Iniciar Ponto').setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId('btn_sair').setLabel('Finalizar Ponto').setStyle(ButtonStyle.Danger),
+      new ButtonBuilder().setCustomId('btn_perfil').setLabel('Meu Perfil').setStyle(ButtonStyle.Secondary)
     );
 
     await message.channel.send({ embeds: [embed], components: [row] });
