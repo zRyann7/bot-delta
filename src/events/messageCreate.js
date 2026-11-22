@@ -5,12 +5,9 @@ const PREFIX = '!';
 const COOLDOWN_MS = 2000;
 const cooldowns = new Map();
 
-const AJUDA_GERAL = [
-  '`!painel` - abre o painel de ponto',
+const AJUDA = [
+  '`!painel` - posta o painel de ponto no canal',
   '`!pontosRegistrados` - total de horas da unidade',
-].join('\n');
-
-const AJUDA_STAFF = [
   '`!pontos` - quem está com ponto aberto',
   '`!ultimosP @piloto` - últimos 5 plantões',
   '`!ajustarHoras @piloto <valor>` - soma ou tira horas',
@@ -25,14 +22,12 @@ const AJUDA_STAFF = [
 const erroSilencioso = (err) => console.error('[messageCreate]', err.message);
 
 async function enviarAjuda(message) {
-  const staff = await autorEhStaff(message);
+  if (!(await autorEhStaff(message))) return;
 
   const embed = new EmbedBuilder()
-    .setTitle('📋 Comandos - Unidade Delta')
+    .setTitle('Comandos da Liderança - Unidade Delta')
     .setColor('#5865F2')
-    .addFields({ name: 'Geral', value: AJUDA_GERAL });
-
-  if (staff) embed.addFields({ name: 'Liderança', value: AJUDA_STAFF });
+    .setDescription(AJUDA);
 
   return message
     .reply({ embeds: [embed], allowedMentions: { repliedUser: false } })

@@ -4,7 +4,7 @@ const { formatarHoras } = require('../../utils/formatters');
 
 module.exports = {
   name: 'pontosRegistrados',
-  staffOnly: false,
+  staffOnly: true,
   async execute(message) {
     try {
       const membros = await getTodosMembros();
@@ -47,4 +47,4 @@ module.exports = {
       return message.reply('❌ Erro ao buscar os pontos registrados. Verifique os logs.');
     }
   },
-};
+};  
