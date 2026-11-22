@@ -1,18 +1,34 @@
+const { MessageFlags } = require('discord.js');
+
 module.exports = {
   name: 'interactionCreate',
   async execute(interaction, client) {
-    if (!interaction.isButton()) return;
+    let handler;
+    if (interaction.isChatInputCommand()) {
+      handler = client.slashCommands.get(interaction.commandName);
+    } else if (interaction.isButton()) {
+      handler = client.buttons.get(interaction.customId);
+    } else if (interaction.isModalSubmit()) {
+      handler = client.modals.get(interaction.customId);
+    }
+    if (!handler) return;
 
-    const buttonHandler = client.buttons.get(interaction.customId);
-    if (!buttonHandler) return;
+    const nome = interaction.commandName || interaction.customId;
 
-    await interaction.deferReply({ ephemeral: true });
+    if (!handler.skipDefer) {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    }
 
     try {
-      await buttonHandler.execute(interaction, client);
+      await handler.execute(interaction, client);
     } catch (error) {
-      console.error(`Erro no botao ${interaction.customId}:`, error);
-      await interaction.editReply('Erro ao processar a requisicao. Tente novamente.');
+      console.error(`Erro na interacao ${nome}:`, error);
+      const aviso = 'Erro ao processar a requisicao. Tente novamente.';
+      if (interaction.deferred || interaction.replied) {
+        await interaction.editReply(aviso).catch(() => {});
+      } else {
+        await interaction.reply({ content: aviso, flags: MessageFlags.Ephemeral }).catch(() => {});
+      }
     }
   },
 };

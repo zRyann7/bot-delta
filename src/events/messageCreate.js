@@ -10,7 +10,7 @@ const AJUDA = [
   '`!pontosRegistrados` - total de horas da unidade',
   '`!pontos` - quem está com ponto aberto',
   '`!ultimosP @piloto` - últimos 5 plantões',
-  '`!ajustarHoras @piloto <valor>` - soma ou tira horas',
+  '`/ajustarhoras` - abre a tela para adicionar ou remover horas',
   '`!fecharP @piloto` ou `<ID>` - fecha o ponto de alguém',
   '`!fecharTodosPontos` - fecha todos os pontos abertos',
   '`!zerarDados @piloto` ou `<ID>` - zera horas e apreensões',

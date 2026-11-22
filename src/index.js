@@ -14,6 +14,8 @@ const client = new Client({
 
 client.commands = new Collection();
 client.buttons = new Collection();
+client.modals = new Collection();
+client.slashCommands = new Collection();
 
 const commandsPath = path.join(__dirname, 'commands');
 for (const folder of fs.readdirSync(commandsPath)) {
@@ -33,6 +35,26 @@ for (const file of fs.readdirSync(buttonsPath).filter((f) => f.endsWith('.js')))
   const button = require(path.join(buttonsPath, file));
   if (button.customId && button.execute) {
     client.buttons.set(button.customId, button);
+  }
+}
+
+const slashPath = path.join(__dirname, 'slashCommands');
+if (fs.existsSync(slashPath)) {
+  for (const file of fs.readdirSync(slashPath).filter((f) => f.endsWith('.js'))) {
+    const slash = require(path.join(slashPath, file));
+    if (slash.data && slash.execute) {
+      client.slashCommands.set(slash.data.name, slash);
+    }
+  }
+}
+
+const modalsPath = path.join(__dirname, 'interactions', 'modals');
+if (fs.existsSync(modalsPath)) {
+  for (const file of fs.readdirSync(modalsPath).filter((f) => f.endsWith('.js'))) {
+    const modal = require(path.join(modalsPath, file));
+    if (modal.customId && modal.execute) {
+      client.modals.set(modal.customId, modal);
+    }
   }
 }
 
