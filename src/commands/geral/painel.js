@@ -5,7 +5,11 @@ module.exports = {
   staffOnly: true,
   async execute(message) {
     const embed = new EmbedBuilder()
-      .setTitle('Painel de Ponto - Unidade Delta')
+      .setAuthor({
+        name: 'Unidade Delta',
+        iconURL: message.client.user.displayAvatarURL(),
+      })
+      .setTitle('Painel de Ponto')
       .setDescription(
         'Registre seu expediente pelos botões abaixo.\n\n' +
         '**Iniciar Ponto** abre o seu plantão.\n' +
